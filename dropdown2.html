@@ -1,0 +1,142 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>VanillaSelect - standalone replacement for select elements</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:400,300">
+	<!-- <link rel="stylesheet" type="text/css" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.css"> -->
+	<link rel="stylesheet" href="vanilla-select.css">
+	<style>
+		/* *{padding:0; margin:0;} */
+		body {
+			font: 300 15px Roboto, Calibri;
+		}
+		.content {
+			/* margin: 0px auto 0; */
+			width: 300px;
+		}
+        .select-box {
+            font-family: Roboto, Arial;
+            margin: 0px 0;
+        }
+	</style>
+</head>
+<body>
+    <!-- <p> 'type_10'Alias
+        Burn -> type_6 
+        Data -> type_12
+        Exchange -> type_7
+        Invokescript-> type_16 
+        Issue -> type_3
+        Reissue -> type_5
+        Lease -> type_8 
+        Cancel lease -> type_9
+        Transfer -> type_4
+        Mass transfer -> type_11
+        Set script -> type_13
+        Set asset script -> type_15  </p> -->
+	<div class="content">
+		<div ref="select" class="select-box"></div>
+	</div>
+
+	<script src="vanilla-select.min.js"></script>
+	<script>
+
+		const source = [{
+                icon: 'fa fa-font',
+                value:'alias',
+                label: 'type_10'
+                
+			},
+			{
+                icon:'fa fa-font',
+                value:'Burn',
+				label:'type_6'
+			},
+			{
+                icon: 'fa fa-font',
+                value:'Data',
+				label:'type_12'
+            },
+            {
+                icon: 'fa fa-font',
+                value:'Exchange',
+				label: 'type_7' 
+            },
+            {
+                icon: 'fa fa-font',
+                value:'Invokescript',
+				label: 'type_16'
+            },
+            {
+				icon: 'fa fa-font',
+                value: 'Issue',
+                label:'type_3'
+            },
+            {
+				icon: 'fa fa-font',
+                value: 'Reissue',
+                label:'type_5'
+            },
+            {
+				icon: 'fa fa-font',
+                value: 'Lease',
+                label:'type_8'
+            },
+            {
+				icon: 'fa fa-font',
+                value: 'Cancel lease',
+                label:'type_9'
+            },
+            {
+				icon: 'fa fa-font',
+                value: 'Transfer',
+                label:'type_4'
+            },
+            {
+				icon: 'fa fa-font',
+                value: 'Mass transfer',
+                label:'type_11'
+            },
+            {
+				icon: 'fa fa-font',
+                value: 'Set script',
+                label:'type_13'
+            },
+            {
+				icon: 'fa fa-font',
+                value: 'Set asset script',
+                label:'type_15 '
+			},
+		];
+
+		let select = Array.from(document.querySelectorAll('[ref="select"]')).map(el => {
+			return new Select({
+				placeholder: 'Select transaction type',
+                search: true,
+                noResults: 'No results found',
+                selected: 'Select transaction type',
+				dataset: source,
+				onSelected: item => console.log(item.label)
+			}).componentMount({
+				el: el
+			});
+        });
+        /* console.log(select); */
+        
+
+		/* let select2 = new Select({
+			dataset: source,
+			selected: source[1].value,
+			onSelected: item => console.log(item)
+		}).componentMount({
+			el: document.querySelector('[ref="select2"]')
+		}); */
+
+    </script>
+     
+         
+</body>
+
+</html>
+

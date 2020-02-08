@@ -1,0 +1,267 @@
+<html>
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="litegraph.css">
+  <script src="litegraph_waves.js"></script>
+  <script src="sqlNodes.js"></script> 
+  <style>
+    th, td, p, input {
+        font:14px Verdana;
+    }
+    table, th, td 
+    {
+        border: solid 1px #DDD;
+        border-collapse: collapse;
+        padding: 2px 3px;
+        text-align: center;
+    }
+    th {
+        font-weight:bold;
+    }
+</style>
+</head>
+<body style='width:100%; height:100%'>
+  <button type="button" onclick="showCode()" class="btn btn-secondary">show querry</button>
+  <!-- <div class="container">
+    <div class="btn-group"  >
+       
+      <button type="button" class="btn btn-secondary">From</button>
+      <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
+      </button>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" value='type_10' href="#">Alias</a>
+        <a class="dropdown-item" value='type_6' href="#">Burn</a>
+        <a class="dropdown-item" value='type_12' href="#">Data</a>
+        <a class="dropdown-item" value='type_7' href="#">Exchange</a>
+        <a class="dropdown-item" value='type_16' href="#">Invokescript</a>
+        <a class="dropdown-item" value='type_3' href="#">Issue</a>
+        <a class="dropdown-item" value='type_5' href="#">Reissue</a>
+        <a class="dropdown-item" value='type_8' href="#">Lease</a>
+        <a class="dropdown-item" value='type_9' href="#">Cancel lease</a>
+        <a class="dropdown-item" value='type_4' href="#">Transfer</a>
+        <a class="dropdown-item" value='type_11' href="#">Mass transfer</a>
+        <a class="dropdown-item" value='type_13' href="#">Set script</a>
+        <a class="dropdown-item" value='type_15' href="#">Set asset script</a>
+        
+        
+      </div>
+    </div>
+  </div> -->
+
+  <div style='padding-top: 0px;'>
+    <canvas id='mycanvas' width='1024' height='600' style='border: 0px solid;'></canvas>
+  </div>
+<!-- <button onclick="getTable()">show it</button> -->
+<script>
+var graph = new LGraph();
+var canvas = new LGraphCanvas("#mycanvas", graph);
+var table=""
+var arrayCode = []
+var myQuery = "";
+  /* $(".dropdown-menu a").click(function(e){
+    e.preventDefault(); // cancel the link behaviour
+    var from = $(this).text();
+    var tabletype = $(this).attr("value")
+    table=tabletype
+}); */
+
+function getUnique(array){
+    var uniqueArray = [];
+    var array = array.filter(function (el) {
+        return el != "";
+      });
+    // Loop through array values
+    for(i=0; i < array.length; i++){
+        if(uniqueArray.indexOf(array[i]) === -1) {
+            uniqueArray.push(array[i]);
+        }
+    }
+    return uniqueArray;
+}
+    ///////////////////////graph functions /////////////////////////
+    function getNodes(graph){
+    /* 	console.log(list["1"]); */
+        
+    var step=1
+    var elements=[]
+    
+    
+    while (step<=graph.last_link_id) {	
+        
+        if(graph.links[step]!=undefined) elements.push(graph.links[step])
+        step++
+    }
+    return elements
+    
+    }
+function Nodes(graph){
+    var vertices=[]
+
+    if(graph.last_node_id>0){
+        for (let index = 1; index <=graph.last_node_id; index++) {
+        
+            if(graph._nodes_by_id[index]!=undefined){vertices.push(graph._nodes_by_id[index].id)}
+        
+        }
+
+    }
+    var nodes=getNodes(graph)
+    console.log("vertices"+vertices);
+    
+    if (nodes.length>0){
+    
+        for (let i = 0; i < vertices.length; i++) {
+            
+            for (let j = 0; j < nodes.length; j++) {
+                
+                if(vertices[i]==nodes[j]["origin_id"]){
+                    vertices.splice(i,1)
+                    i=0
+                }
+            }
+            
+        }
+
+    }
+    console.log("filer vertices "+vertices);
+    
+    return vertices
+}
+    ///////////////////////////////////////////////////////
+
+
+    
+
+/* var fromString = getUnique(globalTableName).join() */
+//var filtred = getUnique(globalTableName)
+function getExecutableNodes(){
+  return graph._nodes_executable
+}
+
+
+function getTableNames(){
+  var result= []
+  var execNodes = getExecutableNodes()
+  for (let index = 0; index < execNodes.length; index++) {
+   
+   if (execNodes[index].properties.nodeName=="fieldNode") {
+
+   result.push(execNodes[index].properties.tableName) 
+   }
+  }  
+   return result
+}
+
+ function showCode(){
+
+var myNodes = Nodes(graph)
+  var conditionQuerry = graph._nodes_by_id[myNodes[0]].outputs[0]._data  
+
+/* _nodes_by_id[2].outputs[""0""]._data */
+/* console.log(myNodes[0]); */
+
+var tableNames = getTableNames()
+/* var tabelNamesFiltered = getUnique(tableNames) */
+var finalTableNames = getUnique(tableNames).join()
+
+var querystring = 'FROM '+finalTableNames+' WHERE ' +conditionQuerry+' limit 10'
+console.log(querystring);
+
+/////////ajax request to webserver ////////////
+/* $.ajax({
+    type: "POST",
+    url: 'http://localhost:3000/query',
+    data: querystring,
+    dataType: "json",
+    success: function (json) {
+        alert("sucess!")
+    } ,
+    error: function (xhr, status, errorThrown) {
+        //Here the status code can be retrieved like;
+         xhr.status; 
+        //The message added to Response object in Controller can be retrieved as following.
+         xhr.responseText;
+        alert(xhr.status+" "+xhr.responseText)
+    } 
+}); */
+axios.post('http://localhost:3000/query', {
+  selectPart:"SELECT id, timestamp ",
+    conditionPart: querystring
+  })
+  .then(function (response) {
+//////DynamicTable creator////////////////
+
+var res = response.data
+console.log(res);
+// EXTRACT VALUE FOR HTML HEADER. 
+        // ('Book ID', 'Book Name', 'Category' and 'Price')
+        var col = [];
+        for (var i = 0; i < res.length; i++) {
+            for (var key in res[i]) {
+                if (col.indexOf(key) === -1) {
+                    col.push(key);
+                }
+            }
+        }
+
+        // CREATE DYNAMIC TABLE.
+        var table = document.createElement("table");
+
+        // CREATE HTML TABLE HEADER ROW USING THE EXTRACTED HEADERS ABOVE.
+
+        var tr = table.insertRow(-1);                   // TABLE ROW.
+
+        for (var i = 0; i < col.length; i++) {
+            var th = document.createElement("th");      // TABLE HEADER.
+            th.innerHTML = col[i];
+            tr.appendChild(th);
+        }
+
+        // ADD JSON DATA TO THE TABLE AS ROWS.
+        for (var i = 0; i < res.length; i++) {
+
+            tr = table.insertRow(-1);
+
+            for (var j = 0; j < col.length; j++) {
+                var tabCell = tr.insertCell(-1);
+                tabCell.innerHTML = res[i][col[j]];
+            }
+        }
+
+        // FINALLY ADD THE NEWLY CREATED TABLE WITH JSON DATA TO A CONTAINER.
+        var divContainer = document.getElementById("showData");
+        divContainer.innerHTML = "";
+        divContainer.appendChild(table);
+    
+////////////////////////////////////
+    /* alert(JSON.stringify(response.data[0])) */
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+/////////////////////////////////////////////
+/* alert(querystring) */
+  /* console.log(tabelNamesFiltered.join()); */
+  
+  
+ 
+  /* console.log('our table :'+globalTableName[0]); */
+  /* console.log(fromString); */
+/* alert('FROM '+ fromString +' WHERE '+ graph._nodes_in_order[graph.last_link_id].outputs[0]._data) */
+/* console.log(graph._nodes_in_order[4].outputs[0]._data); */
+/* console.log(graph._nodes_in_order[graph.last_link_id].outputs[0]._data); */
+/* console.log(getExecutableNodes()); */
+}
+
+</script>
+ 
+<script>
+graph.start()
+</script>
+<p id="showData"></p>
+</body>
+</html>
